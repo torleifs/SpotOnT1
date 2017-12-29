@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Xamarin.Auth;
@@ -6,20 +7,58 @@ using Xamarin.Auth;
 namespace SpotOnT1.Login
 {
     public interface ILoginService {
+        Task Initialize();
         Task Login();
         string AuthToken { get; set; }
+        bool IsLoggedIn { get; set; }
     }
     public class LoginService : ILoginService
     {
+        private const string ACCOUNTSTORE_KEY = "SpotAccount";
         private OAuth2Authenticator authenticator;
         private TaskCompletionSource<bool> loginCompletionSource;
         private string authToken;
-        public string AuthToken { get { return authToken; } set { authToken = value; } }
+        private bool isLoggedIn = false;
         private ISpotifyClient _spotifyClient;
+        private AccountStore _accountStore;
+
+        public string AuthToken { 
+            get => authToken; 
+            set => authToken = value;
+        }
+        public bool IsLoggedIn { 
+            get => isLoggedIn; 
+            set => isLoggedIn = value;
+        }
        
         public LoginService(ISpotifyClient spotifyClient) 
         {
             _spotifyClient = spotifyClient;
+            _accountStore = AccountStore.Create();
+        }
+
+        public async Task Initialize() {
+            var accounts = await _accountStore.FindAccountsForServiceAsync(ACCOUNTSTORE_KEY);
+            var account = accounts.FirstOrDefault();
+            if (account != null)
+            {
+                isLoggedIn = GetLoginStatus(account);
+                if (isLoggedIn)
+                {
+                    AuthToken = account.Properties["access_token"];
+                }
+            } else {
+                isLoggedIn = false;
+            }
+        }
+
+        private bool GetLoginStatus(Account account) {
+            string createdString = account.Properties["created"];
+            string expires = account.Properties["expires_in"];
+            int secondsToExpire = int.Parse(expires);
+            var createdTime = DateTimeOffset.Parse(createdString);
+            DateTimeOffset expireDate = createdTime.AddSeconds(secondsToExpire);
+            return (DateTimeOffset.Now < expireDate);
         }
 
         public async Task Login() {
@@ -41,17 +80,18 @@ namespace SpotOnT1.Login
 
         async void OnAuthCompleted(object sender, AuthenticatorCompletedEventArgs e)
         {
+            var now = DateTimeOffset.Now; 
             var authenticator = sender as OAuth2Authenticator;
             if (authenticator != null)
             {
                 authenticator.Completed -= OnAuthCompleted;
                 authenticator.Error -= OnAuthError;
             }
-            if (authenticator.IsAuthenticated())
-            {
-                AccountStore store = AccountStore.Create();
-                await store.SaveAsync(e.Account, "SpotAccount");
-            }
+
+                
+            e.Account.Properties["created"] = now.ToString();
+            await _accountStore.SaveAsync(e.Account, "SpotAccount");
+
             string token = e.Account.Properties["access_token"];
             AuthToken = token;
             loginCompletionSource.TrySetResult(true);

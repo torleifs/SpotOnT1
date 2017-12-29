@@ -14,21 +14,38 @@ namespace SpotOnT1
 
         public App()
         {
-
             InitializeComponent();
         }
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
 
             Container = CreateContainer();
             if (Application.Current.Resources == null) {
                 Application.Current.Resources = new ResourceDictionary();
             }
+            bool isLoggedIn = false;
+            using (var scope = Container.BeginLifetimeScope())
+            {
+                var appInitializer = scope.Resolve<AppInitializer>();
+                await appInitializer.StartInitialization();
+                var loginService = scope.Resolve<ILoginService>();
+                isLoggedIn = loginService.IsLoggedIn;
+            }
+
             this.Resources["Locator"] = new Locator(property => Container.Resolve(Type.GetType($"SpotOnT1.ViewModels.{property}")));
-            var rootPage = new Login.OAuthNativeFlowPage();
-            var navWrapper = new NavigationPage(rootPage);
-            MainPage = navWrapper;
+            if (isLoggedIn)
+            {
+                var rootPage = new MePage();
+                var navWrapper = new NavigationPage(rootPage);
+                MainPage = navWrapper;
+            }
+            else
+            {
+                var rootPage = new Login.OAuthNativeFlowPage();
+                var navWrapper = new NavigationPage(rootPage);
+                MainPage = navWrapper;
+            }
         }
 
         protected override void OnSleep()
@@ -51,7 +68,11 @@ namespace SpotOnT1
             builder.RegisterType<UserViewModel>();
            // builder.RegisterAssemblyTypes(typeof(App).GetTypeInfo().Assembly).InNamespace("SpotOnT1.ViewModels");
             builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
+            builder.RegisterType<AppInitializer>().SingleInstance();
             return builder.Build();
+        }
+        private void initializeServices() {
+            
         }
     }
 }
