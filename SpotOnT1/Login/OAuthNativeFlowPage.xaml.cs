@@ -15,12 +15,11 @@ namespace SpotOnT1.Login
         {
             InitializeComponent();
             loginButton.Clicked += async (sender, e) => {
-                using (var scope = App.Container.BeginLifetimeScope())
-                {
-                    var loginService = scope.Resolve<ILoginService>();
+                var loginService = ViewModels.ViewmodelLocator.Resolve<ILoginService>();
+              
                     await loginService.Login();
-                }
-                await Navigation.PushAsync(new MePage());
+
+                await Navigation.PushAsync(new Views.UserView());
             };
         }
 

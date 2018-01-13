@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -62,6 +63,7 @@ namespace SpotOnT1.Login
         }
 
         public async Task Login() {
+            Debug.WriteLine("Logging in");
             var ss = Constants.iOSClientId;
             authenticator = new OAuth2Authenticator(
                 clientId: Constants.iOSClientId,
@@ -69,6 +71,7 @@ namespace SpotOnT1.Login
                 authorizeUrl: new Uri(Constants.AuthEndpoint),
                 redirectUrl: new Uri(Constants.iOSRedirectUri),
                 isUsingNativeUI: false);
+            Debug.WriteLine("Got authenticator");
             authenticator.Completed += OnAuthCompleted;
             authenticator.Error += OnAuthError;
             var presenter = new Xamarin.Auth.Presenters.OAuthLoginPresenter();
@@ -80,6 +83,7 @@ namespace SpotOnT1.Login
 
         async void OnAuthCompleted(object sender, AuthenticatorCompletedEventArgs e)
         {
+            Debug.WriteLine("Auth completed");
             var now = DateTimeOffset.Now; 
             var authenticator = sender as OAuth2Authenticator;
             if (authenticator != null)

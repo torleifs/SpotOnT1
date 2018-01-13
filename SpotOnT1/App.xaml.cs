@@ -19,24 +19,17 @@ namespace SpotOnT1
 
         protected override async void OnStart()
         {
+            ViewmodelLocator.RegisterDependencies();
 
-            Container = CreateContainer();
-            if (Application.Current.Resources == null) {
-                Application.Current.Resources = new ResourceDictionary();
-            }
-            bool isLoggedIn = false;
-            using (var scope = Container.BeginLifetimeScope())
-            {
-                var appInitializer = scope.Resolve<AppInitializer>();
-                await appInitializer.StartInitialization();
-                var loginService = scope.Resolve<ILoginService>();
-                isLoggedIn = loginService.IsLoggedIn;
-            }
+            var loginService = ViewmodelLocator.Resolve<ILoginService>();
 
-            this.Resources["Locator"] = new Locator(property => Container.Resolve(Type.GetType($"SpotOnT1.ViewModels.{property}")));
+            bool isLoggedIn = loginService.IsLoggedIn;
+            
+
+          
             if (isLoggedIn)
             {
-                var rootPage = new MePage();
+                var rootPage = new Views.UserView();
                 var navWrapper = new NavigationPage(rootPage);
                 MainPage = navWrapper;
             }
@@ -58,19 +51,7 @@ namespace SpotOnT1
             // Handle when your app resumes
         }
 
-        private IContainer CreateContainer() {
-            var builder = new ContainerBuilder();
-            builder.Register(c =>
-            {
-                var spotifyApi = RestService.For<ISpotifyClient>("https://api.spotify.com");
-                return spotifyApi;
-            }).As<ISpotifyClient>().SingleInstance();
-            builder.RegisterType<UserViewModel>();
-           // builder.RegisterAssemblyTypes(typeof(App).GetTypeInfo().Assembly).InNamespace("SpotOnT1.ViewModels");
-            builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
-            builder.RegisterType<AppInitializer>().SingleInstance();
-            return builder.Build();
-        }
+      
         private void initializeServices() {
             
         }
