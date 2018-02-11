@@ -65,5 +65,7 @@ namespace SpotOnT1
 
         [Get("/v1/me/playlists")]
         Task<PlayLists> GetPlayLists([Header("Authorization")] string auth);
+
+        
     }
 }

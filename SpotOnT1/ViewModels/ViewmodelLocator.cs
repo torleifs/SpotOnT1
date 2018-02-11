@@ -5,6 +5,7 @@ using SpotOnT1.Login;
 using System;
 using System.Globalization;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace SpotOnT1.ViewModels
 {
@@ -29,6 +30,7 @@ namespace SpotOnT1.ViewModels
         public static void RegisterDependencies() {
             var builder = new ContainerBuilder();
             builder.RegisterType<UserViewModel>();
+            builder.RegisterType<PlaylistOverviewViewModel>();
             builder.Register(c =>
             {
                 var spotifyApi = RestService.For<ISpotifyClient>("https://api.spotify.com");
@@ -47,7 +49,9 @@ namespace SpotOnT1.ViewModels
         }
 
         private static void OnAutoWireViewModelChanged(BindableObject bindable, object oldValue, object newValue) {
+            
             var view = bindable as Element;
+            Debug.WriteLine("Resolving view for " + view.GetType());
             if (view == null ) {
                 return;
             }
@@ -55,13 +59,14 @@ namespace SpotOnT1.ViewModels
             var viewName = viewType.FullName.Replace(".Views.", ".ViewModels.");
             var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
             var viewModelName = string.Format(CultureInfo.InvariantCulture, "{0}Model, {1}", viewName, viewAssemblyName);
-
+            Debug.WriteLine("Trying to resolve to viewmodel: " + viewModelName);
             var viewModelType = Type.GetType(viewModelName);
             if (viewModelType == null) {
                 return;
             }
             var viewModel = _container.Resolve(viewModelType);
             view.BindingContext = viewModel;
+            Debug.WriteLine("Bound view " + nameof(viewType) + " to " + nameof(viewModel));
         }
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="SpotOnT1.Views.PlaylistOverviewView"
+    xmlns:viewModel="clr-namespace:SpotOnT1.ViewModels;assembly=SpotOnT1"
+    viewModel:ViewmodelLocator.AutowireViewModel="true">
+	<ContentPage.Content>
+        <StackLayout>
+        <Label TextColor="Black" Text="{Binding Title}"/>
+         <ListView x:Name="EmployeeView" ItemsSource="{Binding PlayLists}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding name}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+            </StackLayout>
+	</ContentPage.Content>
+</ContentPage>

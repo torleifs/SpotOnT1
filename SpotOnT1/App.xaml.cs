@@ -22,16 +22,16 @@ namespace SpotOnT1
             ViewmodelLocator.RegisterDependencies();
 
             var loginService = ViewmodelLocator.Resolve<ILoginService>();
-
+            await loginService.Initialize();
             bool isLoggedIn = loginService.IsLoggedIn;
             
 
           
             if (isLoggedIn)
             {
-                var rootPage = new Views.UserView();
-                var navWrapper = new NavigationPage(rootPage);
-                MainPage = navWrapper;
+                //var rootPage = new Views.PlaylistOverviewView();
+                //var navWrapper = new NavigationPage(rootPage);
+                MainPage = new Views.MainPage();
             }
             else
             {

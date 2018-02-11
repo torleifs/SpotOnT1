@@ -6,6 +6,7 @@ using Refit;
 using System.Net.Http;
 using SpotOnT1;
 using Autofac;
+using System.Diagnostics;
 namespace SpotOnT1.Login
 {
     public partial class OAuthNativeFlowPage : ContentPage
@@ -18,8 +19,9 @@ namespace SpotOnT1.Login
                 var loginService = ViewModels.ViewmodelLocator.Resolve<ILoginService>();
               
                     await loginService.Login();
-
-                await Navigation.PushAsync(new Views.UserView());
+                Debug.WriteLine("Logged in. Navigationg...");
+                Application.Current.MainPage = new Views.MainPage();
+                //await Navigation.PushAsync(new Views.MainPage());
             };
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using SpotOnT1.Login;
 using System.ComponentModel;
 namespace SpotOnT1.ViewModels
@@ -18,6 +19,16 @@ namespace SpotOnT1.ViewModels
                 
                 }
             }}
+
+        private ObservableCollection<PlayList> _playlists;
+        public ObservableCollection<PlayList> PlayLists {
+            get => _playlists;
+            set
+            {
+                _playlists = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PlayLists"));
+            }
+        }
         private ISpotifyClient _spotifyClient;
         private ILoginService _loginService;
 
@@ -35,6 +46,8 @@ namespace SpotOnT1.ViewModels
         {
             var me = await _spotifyClient.GetMe("Bearer " + _loginService.AuthToken);
             Name = me.displayName;
+            var rawPlayLists = await _spotifyClient.GetPlayLists("Bearer " + _loginService.AuthToken);
+
         }
 
     }
